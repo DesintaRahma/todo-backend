@@ -1,11 +1,25 @@
 import pool from '../config/db.js';
 
 export const TodoModel = {
-  getByUserId: async (userId: number) => {
-    const [rows] = await pool.query('SELECT * FROM todos WHERE user_id = ?', [userId]);
+  // Ambil daftar todo dengan pagination
+  getByUserId: async (userId: number, limit: number, offset: number) => {
+    const [rows] = await pool.query(
+      'SELECT * FROM todos WHERE user_id = ? ORDER BY id DESC LIMIT ? OFFSET ?',
+      [userId, limit, offset]
+    );
     return rows;
   },
 
+  // Hitung total todo milik user (untuk pagination)
+  countByUserId: async (userId: number) => {
+    const [rows]: any = await pool.query(
+      'SELECT COUNT(*) AS total FROM todos WHERE user_id = ?',
+      [userId]
+    );
+    return rows[0].total as number;
+  },
+
+  // Ambil 1 todo berdasarkan id dan userId
   getById: async (id: number, userId: number) => {
     const [rows]: any = await pool.query(
       'SELECT * FROM todos WHERE id = ? AND user_id = ?',
@@ -32,11 +46,11 @@ export const TodoModel = {
   },
 
   // Hapus todo berdasarkan id dan userId
-delete: async (id: number, userId: number) => {
-  const [result]: any = await pool.query(
-    'DELETE FROM todos WHERE id = ? AND user_id = ?',
-    [id, userId]
-  );
-  return result.affectedRows;
-}
+  delete: async (id: number, userId: number) => {
+    const [result]: any = await pool.query(
+      'DELETE FROM todos WHERE id = ? AND user_id = ?',
+      [id, userId]
+    );
+    return result.affectedRows;
+  }
 };
